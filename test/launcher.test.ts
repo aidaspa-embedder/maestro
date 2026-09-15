@@ -1,14 +1,13 @@
-import { afterAll, beforeEach, expect, mock, test } from "bun:test";
+import { afterAll, beforeEach, expect, mock, spyOn, test } from "bun:test";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ExecResult } from "../src/lib/exec.ts";
 
 const root = await mkdtemp(join(tmpdir(), "maestro-launcher-"));
-const oldPath = process.env.PATH;
 await writeFile(join(root, "codex"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
-process.env.PATH = `${root}:${oldPath}`;
-afterAll(async () => { process.env.PATH = oldPath; await rm(root, { recursive: true, force: true }); });
+const which = spyOn(Bun, "which").mockReturnValue(join(root, "codex"));
+afterAll(async () => { which.mockRestore(); await rm(root, { recursive: true, force: true }); });
 const calls: string[][] = [];
 const success: ExecResult = { ok: true, code: 0, stdout: "surface-id", stderr: "" };
 let replies: ExecResult[] = [];
