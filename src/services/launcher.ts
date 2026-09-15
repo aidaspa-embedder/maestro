@@ -131,6 +131,24 @@ export async function launchSession(opts: LaunchOptions): Promise<LaunchResult> 
 
   const res = await exec(["osascript", "-e", script], { timeoutMs: 30_000 });
 
+  // Older Ghostty versions (or stale macOS scripting dictionaries) reject the
+  // script before executing it. Only retry compile failures: runtime failures
+  // could already have opened a session, so retrying those would duplicate it.
+  if (!res.ok && terminal === "ghostty" && /\(-274[01]\)/.test(res.stderr)) {
+    const command = agentCommand(binary, opts.args);
+    const args = ["open", "-na", "Ghostty", "--args", `--working-directory=${opts.cwd}`];
+    if (command) args.push(`--command=${command}`, "--wait-after-command=true");
+    const fallback = await exec(args, { timeoutMs: 30_000 });
+    return {
+      ok: fallback.ok,
+      terminal,
+      fallbackCommand,
+      // The CLI opens a new window and cannot pre-type text or return a surface ID.
+      promptNotTyped: fallback.ok && Boolean(opts.initialText),
+      error: fallback.ok ? undefined : fallback.stderr || "Could not open Ghostty",
+    };
+  }
+
   if (!res.ok) {
     const detail = res.stderr.split("\n")[0]?.trim();
     return {

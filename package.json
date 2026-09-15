@@ -1,6 +1,6 @@
 {
   "name": "maestro",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Issue-driven multi-repository workspaces for Jira, Linear, GitHub, Claude and Codex",
   "type": "module",
   "module": "src/index.tsx",
@@ -12,7 +12,7 @@
     "dev": "bun --hot run src/index.tsx",
     "install:local": "bun run scripts/install.ts",
     "build": "bun build --compile --outfile dist/maestro src/index.tsx",
-    "test": "bun run test:pure && bun run test:status && bun run test:tui && bun run test:list && bun run test:search && bun run test:tree && bun run test:ticket && bun run test:picker && bun run test:hardening && bun run test:cache && bun run test:onboarding && bun run test:add-repos && bun run test:install",
+    "test": "bun run test:pure && bun run test:status && bun run test:tui && bun run test:list && bun run test:search && bun run test:tree && bun run test:ticket && bun run test:picker && bun run test:hardening && bun run test:cache && bun run test:onboarding && bun run test:add-repos && bun run test:install && bun run test:launcher",
     "test:pure": "bun test test/units.test.ts test/git.test.ts test/repo-picker.test.tsx test/ticket-detail.test.tsx",
     "test:status": "bun test test/status.test.ts",
     "test:tui": "bun test test/tui.test.tsx",
@@ -34,7 +34,8 @@
     "release:archive": "bun run scripts/release.ts",
     "audit": "bun audit",
     "preview:onboarding": "bun run test/preview-onboarding.tsx",
-    "test:install": "bun test test/install.test.ts"
+    "test:install": "bun test test/install.test.ts",
+    "test:launcher": "bun test test/launcher.test.ts"
   },
   "devDependencies": {
     "@types/bun": "1.3.14",

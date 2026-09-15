@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1
+
+- Fall back to Ghostty’s command-line launcher when macOS rejects its AppleScript
+  definitions with a syntax error. The fallback opens a window and copies the
+  handoff prompt for pasting.
+- Automatically configure shell PATH in the download installer.
+
 ## 0.2.0
 
 - Short README with an archiving roadmap, detailed usage guide, and a standalone
