@@ -6,7 +6,7 @@ A terminal workspace manager for GitHub, Linear/Jira, Claude and Codex.
 
 ## Install
 
-macOS (Apple Silicon or Intel), with Git installed. Once the first release is published:
+macOS (Apple Silicon or Intel), with Git installed.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/aidaspa-embedder/maestro/main/install.sh | sh

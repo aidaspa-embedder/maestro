@@ -1,9 +1,13 @@
 import { afterAll, describe, expect, mock, test } from "bun:test";
 import { rm } from "node:fs/promises";
+import { join } from "node:path";
 import { seedHome } from "./fixtures.ts";
 import type { TicketNode } from "../src/services/linear.ts";
 import type { LinearTicket } from "../src/state/types.ts";
 import { theme } from "../src/theme.ts";
+
+// Service imports capture the config paths, so seed before loading any of them.
+const home = await seedHome({ config: { linearApiKey: "lin_api_test", onboardingComplete: true }, workspaces: [] });
 
 /**
  * The create flow's ticket list is a tree: sub-issues hang off their parent and
@@ -95,10 +99,9 @@ mock.module("../src/services/github.ts", () => ({
   fetchBranches: async () => ["main", "develop"],
 }));
 
-const home = await seedHome({ config: { linearApiKey: "lin_api_test" }, workspaces: [] });
-
 const { testRender } = await import("@opentui/react/test-utils");
 const { App } = await import("../src/app.tsx");
+const { CONFIG_DIR } = await import("../src/lib/paths.ts");
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = false;
 
 const r = await testRender(<App />, { width: 118, height: 26 });
@@ -140,6 +143,10 @@ r.mockInput.pressKey("n");
 await settle(700);
 
 describe("sub-issues as tree items", () => {
+  test("config resolves to the isolated fixture before services are loaded", () => {
+    expect(CONFIG_DIR).toBe(join(home, ".config", "maestro"));
+  });
+
   test("sub-issues render nested under their parent", () => {
     dump("ticket picker");
     expect(body()).toContain("ENG-412");

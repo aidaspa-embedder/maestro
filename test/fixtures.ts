@@ -120,5 +120,6 @@ export async function seedHome(opts: { config?: Partial<Config>; workspaces?: Wo
   await writeFile(join(configDir, "workspaces.json"), JSON.stringify(opts.workspaces ?? [], null, 2));
 
   process.env.HOME = home;
+  process.env.MAESTRO_CONFIG_DIR = configDir;
   return home;
 }
