@@ -1,0 +1,80 @@
+{
+  "name": "maestro",
+  "version": "0.2.0",
+  "description": "Issue-driven multi-repository workspaces for Jira, Linear, GitHub, Claude and Codex",
+  "type": "module",
+  "module": "src/index.tsx",
+  "bin": {
+    "maestro": "src/index.tsx"
+  },
+  "scripts": {
+    "start": "bun run src/index.tsx",
+    "dev": "bun --hot run src/index.tsx",
+    "install:local": "bun run scripts/install.ts",
+    "build": "bun build --compile --outfile dist/maestro src/index.tsx",
+    "test": "bun run test:pure && bun run test:status && bun run test:tui && bun run test:list && bun run test:search && bun run test:tree && bun run test:ticket && bun run test:picker && bun run test:hardening && bun run test:cache && bun run test:onboarding && bun run test:add-repos && bun run test:install",
+    "test:pure": "bun test test/units.test.ts test/git.test.ts test/repo-picker.test.tsx test/ticket-detail.test.tsx",
+    "test:status": "bun test test/status.test.ts",
+    "test:tui": "bun test test/tui.test.tsx",
+    "test:list": "bun test test/list-status.test.tsx",
+    "test:search": "bun test test/search.test.tsx",
+    "test:tree": "bun test test/tree.test.tsx",
+    "test:ticket": "bun test test/ticket-preview.test.tsx",
+    "test:picker": "bun test test/ticket-picker.test.tsx",
+    "preview": "bun run test/preview.tsx",
+    "preview:create": "bun run test/preview-create.tsx",
+    "preview:search": "bun run test/preview-search.tsx",
+    "preview:tree": "MAESTRO_PREVIEW=1 bun test test/tree.test.tsx test/ticket-preview.test.tsx test/ticket-picker.test.tsx",
+    "typecheck": "tsc --noEmit",
+    "check": "bun run typecheck && bun run test",
+    "test:hardening": "bun test test/hardening.test.ts test/jira.test.ts",
+    "test:cache": "bun test test/cache.test.ts",
+    "test:onboarding": "bun test test/onboarding.test.tsx",
+    "test:add-repos": "bun test test/add-repos.test.tsx",
+    "release:archive": "bun run scripts/release.ts",
+    "audit": "bun audit",
+    "preview:onboarding": "bun run test/preview-onboarding.tsx",
+    "test:install": "bun test test/install.test.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.14",
+    "@types/react": "19.2.17",
+    "typescript": "7.0.2"
+  },
+  "dependencies": {
+    "@opentui/core": "0.4.5",
+    "@opentui/react": "0.4.5",
+    "react": "19.2.8"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aidaspa-embedder/maestro.git"
+  },
+  "engines": {
+    "bun": ">=1.3.14"
+  },
+  "packageManager": "bun@1.3.14",
+  "files": [
+    "src/",
+    "scripts/",
+    "install.sh",
+    "README.md",
+    "LICENSE",
+    "SECURITY.md",
+    "CHANGELOG.md",
+    "docs/",
+    "bun.lock",
+    "CONTRIBUTING.md",
+    "AGENTS.md"
+  ],
+  "keywords": [
+    "tui",
+    "worktree",
+    "github",
+    "linear",
+    "jira",
+    "claude",
+    "codex"
+  ]
+}

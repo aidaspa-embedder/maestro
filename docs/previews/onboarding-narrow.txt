@@ -1,0 +1,20 @@
+  ◆ maestro  › setup  › welcome                             
+────────────────────────────────────────────────────────────
+                                                            
+  1 / 5   WELCOME                                           
+                                                            
+  A workspace starts with an issue.                         
+  Linear or Jira owns the issue. GitHub owns reposito…      
+                                                            
+  DETECTED ON THIS MACHINE                                  
+  ✓ git      installed                                      
+  ✓ gh       installed                                      
+  ✓ claude   installed                                      
+  ✓ codex    installed                                      
+                                                            
+  Setup saves as you go. Reopen: maestro --setup            
+                                                            
+                                                            
+                                                            
+────────────────────────────────────────────────────────────
+  ⏎ continue   esc later                                    

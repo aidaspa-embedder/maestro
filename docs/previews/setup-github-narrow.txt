@@ -1,0 +1,20 @@
+  ◆ maestro  › setup  › github                              
+────────────────────────────────────────────────────────────
+                                                            
+  2 / 5   GITHUB                                            
+                                                            
+  ▌ GitHub auth              gh                             
+                                                            
+    Repository owner         default                        
+                                                            
+                                                            
+                                                            
+                                                            
+                                                            
+                                                            
+                                                            
+  gh uses GitHub CLI authentication. Run gh auth login --…  
+  1/2  ↑↓ fields · Enter edit · ←→ change                   
+                                                            
+────────────────────────────────────────────────────────────
+  ^n continue   ^s configure later   ^b back   esc later    

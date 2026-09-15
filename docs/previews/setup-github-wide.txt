@@ -1,0 +1,28 @@
+  ◆ maestro  › setup  › github                                     ● linear not linked   ● example  
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  2 / 5   GITHUB                                                                                    
+                                                                                                    
+  ▌ GitHub auth                gh                                                                   
+                                                                                                    
+    Repository owner           default                                                              
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+  gh uses GitHub CLI authentication. Run gh auth login --hostname github.com.                       
+  1/2  ↑↓ fields · Enter edit · ←→ change                                                           
+                                                                                                    
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  ^n continue   ^s configure later   ^b back   esc later                                            

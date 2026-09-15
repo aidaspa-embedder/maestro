@@ -1,0 +1,28 @@
+  ◆ maestro  › setup  › welcome                                    ● linear not linked   ● example  
+────────────────────────────────────────────────────────────────────────────────────────────────────
+                                                                                                    
+  1 / 5   WELCOME                                                                                   
+                                                                                                    
+  A workspace starts with an issue.                                                                 
+  Linear or Jira owns the issue. GitHub owns repositories and pull requests.                        
+  Maestro connects them through local worktrees and your coding agent.                              
+                                                                                                    
+  DETECTED ON THIS MACHINE                                                                          
+  ✓ git      installed                                                                              
+  ✓ gh       installed                                                                              
+  ✓ claude   installed                                                                              
+  ✓ codex    installed                                                                              
+                                                                                                    
+  Native session windows: macOS · Ghostty / iTerm2 / Terminal.app                                   
+  Settings are saved as you go. Setup can be reopened with maestro --setup.                         
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+                                                                                                    
+────────────────────────────────────────────────────────────────────────────────────────────────────
+  ⏎ continue   esc later                                                                            
