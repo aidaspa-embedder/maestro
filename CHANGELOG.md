@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2
+
+- Use Ghostty’s native Apple-event identifiers for launch, listing and focus,
+  removing the scripting-dictionary name lookup that can cause error -2741.
+  Native tabs, editable prompt typing and session tracking are preserved.
+- Remove the command-line fallback introduced in 0.2.1.
+
 ## 0.2.1
 
 - Fall back to Ghostty’s command-line launcher when macOS rejects its AppleScript

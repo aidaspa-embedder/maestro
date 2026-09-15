@@ -1,3 +1,4 @@
+import { ghosttyLaunchScript } from "./ghostty-applescript.ts";
 import { exec } from "../lib/exec.ts";
 import type { AgentKind, TerminalKind } from "../state/types.ts";
 
@@ -124,30 +125,12 @@ export async function launchSession(opts: LaunchOptions): Promise<LaunchResult> 
 
   const script =
     terminal === "ghostty"
-      ? ghosttyScript(opts, binary)
+      ? ghosttyLaunchScript(opts, agentCommand(binary, opts.args), process.env.PATH ?? "")
       : terminal === "iterm2"
         ? itermScript(opts, binary)
         : appleTerminalScript(opts, binary);
 
   const res = await exec(["osascript", "-e", script], { timeoutMs: 30_000 });
-
-  // Older Ghostty versions (or stale macOS scripting dictionaries) reject the
-  // script before executing it. Only retry compile failures: runtime failures
-  // could already have opened a session, so retrying those would duplicate it.
-  if (!res.ok && terminal === "ghostty" && /\(-274[01]\)/.test(res.stderr)) {
-    const command = agentCommand(binary, opts.args);
-    const args = ["open", "-na", "Ghostty", "--args", `--working-directory=${opts.cwd}`];
-    if (command) args.push(`--command=${command}`, "--wait-after-command=true");
-    const fallback = await exec(args, { timeoutMs: 30_000 });
-    return {
-      ok: fallback.ok,
-      terminal,
-      fallbackCommand,
-      // The CLI opens a new window and cannot pre-type text or return a surface ID.
-      promptNotTyped: fallback.ok && Boolean(opts.initialText),
-      error: fallback.ok ? undefined : fallback.stderr || "Could not open Ghostty",
-    };
-  }
 
   if (!res.ok) {
     const detail = res.stderr.split("\n")[0]?.trim();
@@ -181,46 +164,6 @@ export function agentCommand(binary: string | null, args: string[] = []): string
 
 // Agents need a beat to boot before they'll accept input; a shell is ready now.
 const settleDelay = (agent: AgentKind) => (agent === "shell" ? 0.2 : 2.0);
-
-function ghosttyScript(opts: LaunchOptions, binary: string | null): string {
-  const command = agentCommand(binary, opts.args);
-
-  const config = [
-    `set cfg to new surface configuration`,
-    `set initial working directory of cfg to ${asStr(opts.cwd)}`,
-    `set environment variables of cfg to {${asStr(`PATH=${process.env.PATH ?? ""}`)}}`,
-  ];
-  if (command) {
-    config.push(`set command of cfg to ${asStr(command)}`);
-    // Without this, a failed launch closes the surface instantly, hiding why.
-    config.push(`set wait after command of cfg to true`);
-  }
-
-  // A new window is the default; a tab needs an existing window to attach to.
-  const open =
-    opts.target === "tab"
-      ? [
-          `if (count of windows) is 0 then`,
-          `  set t to terminal 1 of selected tab of (new window with configuration cfg)`,
-          `else`,
-          `  set t to terminal 1 of (new tab in window 1 with configuration cfg)`,
-          `end if`,
-        ]
-      : [`set t to terminal 1 of selected tab of (new window with configuration cfg)`];
-
-  const typeIn = opts.initialText
-    ? [`delay ${settleDelay(opts.agent)}`, `input text ${asStr(opts.initialText)} to t`]
-    : [];
-
-  return [
-    `tell application "Ghostty"`,
-    `  activate`,
-    // `return id of t` hands the stable surface id back so the session can be
-    // re-focused later instead of launching a duplicate.
-    ...[...config, ...open, `focus t`, ...typeIn, `return id of t`].map((l) => `  ${l}`),
-    `end tell`,
-  ].join("\n");
-}
 
 function itermScript(opts: LaunchOptions, binary: string | null): string {
   const command = agentCommand(binary, opts.args);

@@ -11,8 +11,9 @@ map ready to use.
 - **Maestro connects them:** local worktrees, session discovery and a keyboard UI.
 
 Built with Bun, React and [OpenTUI](https://opentui.com). MIT licensed.
-Ghostty uses AppleScript when available; if macOS cannot parse its scripting
-definitions, Maestro opens a new Ghostty window and copies the prompt for pasting.
+Ghostty 1.3+ uses native Apple events for windows, tabs, prompt typing and session
+tracking. Maestro uses event identifiers directly so stale scripting terminology
+does not prevent a launch.
 
 Native session launching currently supports **macOS**, with Ghostty, iTerm2 and
 Terminal.app. Other platforms can run the TUI and diagnostics, but native

@@ -1,3 +1,4 @@
+import { ghosttyListScript, ghosttyFocusScript } from "./ghostty-applescript.ts";
 import { exec } from "../lib/exec.ts";
 import type { AgentKind } from "../state/types.ts";
 import type { ResolvedTerminal } from "./launcher.ts";
@@ -32,22 +33,6 @@ export async function appRunning(kind: ResolvedTerminal): Promise<boolean> {
   const res = await exec(["ps", "-axo", "comm="], { timeoutMs: 5_000 });
   if (!res.ok) return false;
   return res.stdout.includes(PROCESS_MATCH[kind]);
-}
-
-function ghosttyListScript(): string {
-  return [
-    `tell application "Ghostty"`,
-    `  set fs to ASCII character 31`,
-    `  set rs to ASCII character 30`,
-    `  set out to ""`,
-    `  repeat with w in windows`,
-    `    repeat with t in terminals of w`,
-    `      set out to out & (id of t) & fs & (name of t) & fs & (working directory of t) & rs`,
-    `    end repeat`,
-    `  end repeat`,
-    `  return out`,
-    `end tell`,
-  ].join("\n");
 }
 
 function itermListScript(): string {
@@ -100,7 +85,7 @@ export async function focusSurface(kind: ResolvedTerminal, id: string): Promise<
 
   const script =
     kind === "ghostty"
-      ? `tell application "Ghostty"\n  activate\n  focus terminal id ${JSON.stringify(id)}\nend tell`
+      ? ghosttyFocusScript(id)
       : `tell application "iTerm"\n  activate\n  select session id ${JSON.stringify(id)}\nend tell`;
 
   const res = await exec(["osascript", "-e", script], { timeoutMs: 10_000 });
