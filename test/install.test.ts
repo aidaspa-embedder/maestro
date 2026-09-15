@@ -58,7 +58,7 @@ if (url === base + "/releases/latest" && args.includes("--head")) {
 `);
   await Promise.all([chmod(join(tools, "curl"), 0o755), chmod(join(tools, "uname"), 0o755)]);
   const env: Record<string, string> = {
-    HOME: home, PATH: `${tools}:/usr/bin:/bin`, TMPDIR: home, LANG: "C",
+    HOME: home, SHELL: "/bin/zsh", PATH: `${tools}:/usr/bin:/bin`, TMPDIR: home, LANG: "C",
     MAESTRO_REPO: "example/maestro", INSTALL_TEST_OS: "Darwin",
     INSTALL_TEST_ARCH: arch === "x64" ? "x86_64" : arch,
     INSTALL_TEST_ASSETS: assets, INSTALL_TEST_REQUESTS: join(home, "requests"),
@@ -71,14 +71,18 @@ if (url === base + "/releases/latest" && args.includes("--head")) {
   };
 }
 
-test("latest release installs atomically to the default path without changing shell profiles", async () => {
+test("latest release installs atomically to the default path and configures PATH without duplicate entries", async () => {
   const f = await fixture();
   const result = await f.run();
   expect(result.code).toBe(0);
   expect(result.stdout).toContain(`Installed: ${f.bin}/maestro`);
   expect((await stat(join(f.bin, "maestro"))).mode & 0o777).toBe(0o755);
   expect((await command([join(f.bin, "maestro"), "--version"], f.env)).stdout.trim()).toBe("0.2.0");
-  expect(await Bun.file(join(f.home, ".zshrc")).text()).toBe("# existing profile\n");
+  const profile = await Bun.file(join(f.home, ".zshrc")).text();
+  expect(profile).toStartWith("# existing profile\n");
+  const shell = await command(["/bin/zsh", "-f", "-c", 'source "$HOME/.zshrc"; source "$HOME/.zshrc"; command -v maestro'], f.env);
+  expect(shell.code).toBe(0);
+  expect(shell.stdout.trim()).toBe(join(f.bin, "maestro"));
   expect(await readdir(f.bin)).toEqual(["maestro"]);
   expect((await readdir(f.home)).some(name => name.startsWith("maestro-install."))).toBe(false);
   const requests = await f.requests();
@@ -87,6 +91,8 @@ test("latest release installs atomically to the default path without changing sh
     `https://github.com/example/maestro/releases/download/v0.2.0/${f.archive}`,
     `https://github.com/example/maestro/releases/download/v0.2.0/${f.archive}.sha256`,
   ]);
+  expect((await f.run()).code).toBe(0);
+  expect(await Bun.file(join(f.home, ".zshrc")).text()).toBe(profile);
   for (const { args } of requests) {
     expect(args[args.indexOf("--proto") + 1]).toBe("=https");
     expect(args[args.indexOf("--proto-redir") + 1]).toBe("=https");
@@ -99,6 +105,10 @@ test("pinned Intel releases support paths with spaces and shell punctuation", as
   const result = await f.run({ MAESTRO_VERSION: "v0.2.0", MAESTRO_BIN_DIR: destination });
   expect(result.code).toBe(0);
   expect(await Bun.file(join(destination, "maestro")).exists()).toBe(true);
+  const shell = await command(["/bin/zsh", "-f", "-c", 'source "$HOME/.zshrc"; command -v maestro'], f.env);
+  expect(shell.code).toBe(0);
+  expect(shell.stderr).toBe("");
+  expect(shell.stdout.trim()).toBe(join(destination, "maestro"));
   expect((await f.requests()).some(r => r.url.endsWith("/latest"))).toBe(false);
 });
 
@@ -143,4 +153,18 @@ test("unsupported platforms and unsafe arguments fail before making download req
     expect(result.code).not.toBe(0);
     expect(await Bun.file(f.env.INSTALL_TEST_REQUESTS!).exists()).toBe(false);
   }
+});
+
+test("PATH setup supports bash, fish, custom profiles and opt-out", async () => {
+  for (const [shell, file] of [["/bin/bash", ".bash_profile"], ["/usr/local/bin/fish", ".config/fish/config.fish"]]) {
+    const f = await fixture();
+    expect((await f.run({ SHELL: shell! })).code).toBe(0);
+    expect(await Bun.file(join(f.home, file!)).text()).toContain(f.bin);
+  }
+  const f = await fixture();
+  expect((await command(["/bin/sh", installer, "--no-path"], f.env)).code).toBe(0);
+  expect(await Bun.file(join(f.home, ".zshrc")).text()).toBe("# existing profile\n");
+  const profile = join(f.home, "custom/profile");
+  expect((await f.run({ MAESTRO_PROFILE: profile })).code).toBe(0);
+  expect(await Bun.file(profile).text()).toContain(f.bin);
 });

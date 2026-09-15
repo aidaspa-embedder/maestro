@@ -19,7 +19,9 @@ terminal launching is not implemented there.
 
 For the compiled release installer, see the [short README](../README.md).
 `MAESTRO_VERSION=v0.2.0` pins a release and `MAESTRO_BIN_DIR=/absolute/path`
-changes its destination. The download installer does not edit shell profiles.
+changes its destination. The download installer adds the directory to your shell PATH (zsh, bash or fish).
+Open a new terminal afterward. Use `sh install.sh --no-path` to skip this, or
+`MAESTRO_PROFILE=/absolute/path` to choose the profile.
 
 From a checkout, with Bun 1.3.14+ and Git installed:
 

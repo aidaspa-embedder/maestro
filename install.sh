@@ -1,5 +1,5 @@
 #!/bin/sh
-# Install a compiled GitHub release. No Bun, sudo or shell-profile edits.
+# Install a compiled GitHub release. No Bun or sudo required. Adds the binary directory to your shell PATH.
 # Overrides: MAESTRO_REPO, MAESTRO_VERSION, MAESTRO_BIN_DIR.
 set -eu
 
@@ -9,6 +9,7 @@ main() {
   bin_dir=${MAESTRO_BIN_DIR:-${HOME:?HOME is not set}/.local/bin}
   scratch=
   staged=
+  update_path=1
 
   fail() { printf 'maestro: %s\n' "$*" >&2; exit 1; }
   cleanup() {
@@ -22,11 +23,13 @@ main() {
 
   case ${1:-} in
     --help|-h)
-      printf '%s\n' 'Usage: sh install.sh' \
+      printf '%s\n' 'Usage: sh install.sh [--no-path]' \
+        '  --no-path                Skip automatic shell PATH configuration.' \
         '  MAESTRO_VERSION=v0.2.0    Pin a release (default: latest).' \
         '  MAESTRO_BIN_DIR=/path     Choose the binary directory (default: ~/.local/bin).' \
         '  MAESTRO_REPO=owner/repo   Use a fork or another release repository.'
       return ;;
+    --no-path) update_path=0 ;;
     '') ;;
     *) fail 'Unknown option. Run sh install.sh --help.' ;;
   esac
@@ -48,7 +51,7 @@ main() {
     x86_64|amd64) arch=x64 ;;
     *) fail 'No release is available for this CPU architecture.' ;;
   esac
-  for tool in curl tar mktemp chmod mv mkdir cat rm; do
+  for tool in curl tar mktemp chmod mv mkdir cat rm sed grep dirname; do
     command -v "$tool" >/dev/null 2>&1 || fail "Required command is missing: $tool"
   done
   if command -v shasum >/dev/null 2>&1; then
@@ -107,11 +110,51 @@ main() {
   mv -f "$staged" "$bin_dir/maestro"
   staged=
   printf '\nInstalled: %s/maestro\n' "$bin_dir"
-  printf 'Run %s/maestro to start setup.\n' "$bin_dir"
+  if [ "$update_path" = 0 ]; then
+    printf 'Run %s/maestro to start setup.\n' "$bin_dir"
+    return
+  fi
   case ":${PATH:-}:" in
-    *":$bin_dir:"*) ;;
-    *) printf 'Add %s to PATH to run maestro from anywhere.\n' "$bin_dir" ;;
+    *":$bin_dir:"*) printf 'Run maestro to start setup.\n'; return ;;
   esac
+  # Quote literal paths; never evaluate profile contents during installation.
+  case "$bin_dir" in
+    *:*|*'
+'*) fail 'Installed, but this directory cannot be added to PATH (colon or newline).' ;;
+  esac
+  shell_name=${SHELL:-/bin/zsh}
+  shell_name=${shell_name##*/}
+  case "${shell_name:-zsh}" in
+    fish)
+      profile=${XDG_CONFIG_HOME:-$HOME/.config}/fish/config.fish
+      escaped=$(printf '%s' "$bin_dir" | sed "s/\\\\/\\\\\\\\/g; s/'/\\\\'/g")
+      path_line="fish_add_path '$escaped'"
+      ;;
+    *)
+      case "${shell_name:-zsh}" in
+        zsh) profile=${ZDOTDIR:-$HOME}/.zshrc ;;
+        bash)
+          profile=$HOME/.bash_profile
+          if [ ! -f "$profile" ]; then
+            if [ -f "$HOME/.bash_login" ]; then profile=$HOME/.bash_login
+            elif [ -f "$HOME/.profile" ]; then profile=$HOME/.profile; fi
+          fi
+          ;;
+        *) profile=$HOME/.profile ;;
+      esac
+      escaped=$(printf '%s' "$bin_dir" | sed 's/[\\$`"]/\\&/g')
+      # Expand PATH when the user's shell starts, not during installation.
+      # shellcheck disable=SC2016
+      path_line='case ":${PATH:-}:" in *:"'"$escaped"'":*) ;; *) export PATH="'"$escaped"':$PATH" ;; esac'
+      ;;
+  esac
+  profile=${MAESTRO_PROFILE:-$profile}
+  case "$profile" in /*) ;; *) fail 'MAESTRO_PROFILE must be an absolute path.' ;; esac
+  if [ ! -f "$profile" ] || ! grep -Fqx -- "$path_line" "$profile"; then
+    mkdir -p "$(dirname "$profile")" || fail "Installed, but cannot create the profile directory: $profile"
+    printf '\n# added by maestro\n%s\n' "$path_line" >> "$profile" || fail "Installed, but cannot update PATH in $profile"
+  fi
+  printf 'PATH configured in %s.\nOpen a new terminal and run maestro to start setup.\n' "$profile"
 }
 
 # Run only after the whole script has arrived when piped through curl.

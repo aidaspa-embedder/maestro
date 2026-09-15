@@ -10,11 +10,11 @@ macOS (Apple Silicon or Intel), with Git installed.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/aidaspa-embedder/maestro/main/install.sh | sh
-~/.local/bin/maestro
 ```
 
 Downloads the latest release, verifies its checksum, and installs to `~/.local/bin`.
-First launch walks you through setup. No Bun required.
+Adds it to your shell PATH automatically. Open a new terminal and run `maestro`
+to start setup. No Bun required.
 
 From a checkout: `bun install --frozen-lockfile && bun run install:local`.
 

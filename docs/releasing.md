@@ -33,7 +33,8 @@ Attach `maestro-v<VERSION>-darwin-arm64.tar.gz` and
 `maestro-v<VERSION>-darwin-x64.tar.gz`, each with its matching `.sha256` file.
 The release tag must match `v<VERSION>` from package.json. The installer resolves
 GitHub's latest published release, verifies SHA-256 and the binary's version,
-then atomically installs it. It never edits shell profiles or requires sudo.
+then atomically installs it. It adds the binary directory to the shell profile without requiring sudo.
+Use `--no-path` to skip profile changes.
 
 Pin a version or choose a destination with environment variables:
 
